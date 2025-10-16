@@ -3,27 +3,32 @@
 START=99
 
 start() {
-    echo "Setting IRQ affinity for wired-only router..."
+    echo "应用优化的IRQ和RPS设置..."
     
-    [ -d "/proc/irq/21" ] && echo "2" > "/proc/irq/21/smp_affinity" 2>/dev/null
-    [ -d "/proc/irq/24" ] && echo "4" > "/proc/irq/24/smp_affinity" 2>/dev/null
-    [ -d "/proc/irq/23" ] && echo "8" > "/proc/irq/23/smp_affinity" 2>/dev/null
+    echo 1 > "/proc/irq/22/smp_affinity" 
+    echo 2 > "/proc/irq/20/smp_affinity"   
+    echo 4 > "/proc/irq/19/smp_affinity" 
+    echo 8 > "/proc/irq/17/smp_affinity" 
     
-    for iface in eth0 eth1 br-lan; do
-        if [ -d "/sys/class/net/$iface/queues/rx-0" ]; then
-            echo 5 > /sys/class/net/$iface/queues/rx-0/rps_cpus 2>/dev/null
-            echo "Set RPS for $iface"
-        fi
-    done
+    echo f > /sys/class/net/eth0/queues/rx-0/rps_cpus 
+    echo f > /sys/class/net/eth1/queues/rx-0/rps_cpus
+    echo f > /sys/class/net/br-lan/queues/rx-0/rps_cpus  
     
-    modprobe mtkhnat 2>/dev/null
+    echo 32768 > /proc/sys/net/core/rps_sock_flow_entries
     
-    echo 32768 > /proc/sys/net/netfilter/nf_conntrack_buckets 2>/dev/null
-    echo 16384 > /proc/sys/net/netfilter/nf_conntrack_expect_max 2>/dev/null
+    # echo 3 > /sys/class/net/ra0/queues/rx-0/rps_cpus
+    # echo 3 > /sys/class/net/rax0/queues/rx-0/rps_cpus
     
-    echo "IRQ affinity set for wired interfaces only"
-}
+    # modprobe mt_wifi
+    # ifconfig rax0 up
+    # ifconfig ra0 up  
+    # ifconfig rai0 up
+    # /etc/init.d/apcli.sh start
+    
+    modprobe mtkhnat
 
-stop() {
-    echo "IRQ affinity service stopped"
+    echo 32768 > /proc/sys/net/netfilter/nf_conntrack_buckets
+    echo 16384 > /proc/sys/net/netfilter/nf_conntrack_expect_max
+    
+    echo "优化设置应用完成"
 }
